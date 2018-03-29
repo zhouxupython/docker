@@ -1,0 +1,199 @@
+sudo add-apt-repository	\
+"deb [arch=amd64] https://mirrors.ustc.edu.cn/docker-ce/linux/ubuntu \
+$(lsb_release -cs) \
+stable"
+
+docker run --name webserver -d -p 80:80 nginx
+
+DOCKER_OPTS="--registry-mirror=https://registry.docker-cn.com"
+
+
+
+sudo service docker restart
+
+https://download.openvz.org/template/precreated/
+http://www.runoob.com/docker/docker-search-command.html
+
+
+
+changing DNS server to google DNS (8.8.8.8)
+https://serverfault.com/questions/784443/tag-latest-not-found-in-repository-docker-io-library-nginx/784472
+/etc/default/docker
+# Use DOCKER_OPTS to modify the daemon startup options.
+DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"
+
+
+
+
+zx@kvm:~$ docker pull nginx
+latest: Pulling from nginx
+2cd56ba950c8: Pull complete
+8ecf8a9b915f: Pull complete
+2f035d3cb1ca: Pull complete
+33ff728209b6: Pull complete
+a8788126754a: Pull complete
+3108c22fc26e: Pull complete
+ba6703c9bbef: Pull complete
+84ce84a95d1f: Pull complete
+f558936b4da4: Pull complete
+e681e65a20da: Pull complete
+Digest: sha256:fbc8eb0a7a4f824c23798034207c531f5ff5a49c23d77b8cdbb315ff5b74f0fd
+Status: Downloaded newer image for nginx:latest
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$ docker images -a
+REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+ubuntu              14.04               e8b280fce101        3 hours ago         404.7 MB
+<none>              <none>              2f0e164a6ec4        3 hours ago         205.2 MB
+nginx               latest              e681e65a20da        6 days ago          108.7 MB
+<none>              <none>              f558936b4da4        6 days ago          108.7 MB
+<none>              <none>              84ce84a95d1f        6 days ago          108.7 MB
+<none>              <none>              ba6703c9bbef        6 days ago          108.7 MB
+<none>              <none>              3108c22fc26e        6 days ago          108.7 MB
+<none>              <none>              a8788126754a        6 days ago          55.27 MB
+<none>              <none>              33ff728209b6        6 days ago          55.27 MB
+<none>              <none>              2f035d3cb1ca        2 weeks ago         55.27 MB
+<none>              <none>              2cd56ba950c8        2 weeks ago         55.27 MB
+<none>              <none>              8ecf8a9b915f        2 weeks ago         55.27 MB
+hello-world         latest              690d80202531        4 months ago        1.848 kB
+<none>              <none>              074d6d4eea74        4 months ago        1.848 kB
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$ docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+ubuntu              14.04               e8b280fce101        3 hours ago         404.7 MB
+<none>              <none>              2f0e164a6ec4        3 hours ago         205.2 MB
+nginx               latest              e681e65a20da        6 days ago          108.7 MB
+hello-world         latest              690d80202531        4 months ago        1.848 kB
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$
+
+
+
+
+
+
+
+
+https://blog.csdn.net/su272009/article/details/46415749	Ubuntu14.04（32位）下安装使用docker
+
+zx@kvm:~$ docker run -i -t ubuntu:14.04 /bin/bash
+root@8af6947b7eab:/#
+
+    rm        Remove one or more containers
+    rmi       Remove one or more images
+zx@kvm:~$ docker rmi -f nginx
+Untagged: nginx:latest
+Deleted: e681e65a20da17dc355d3e54e5d9dcd6a384807ef78961fcebaf787abc0e4abe
+Deleted: f558936b4da446dc85a09090beebb6204c12f536066cae100bb8a5bfecc91efe
+Deleted: 84ce84a95d1fc26d013e31eb085d5b3ca5f0c921d883465e54f646f42f7386ba
+Deleted: ba6703c9bbef65c81b70aa962e0e9708e6180c8a2b7783e776ea84c1081e6ab2
+Deleted: 3108c22fc26e4d039dea2c851ce3dde247a39225ce7c5393c93cb23b129e7c12
+Deleted: a8788126754a1b84d5c6b704d1a012058cb68c571dcca9a47eec881856eae468
+Deleted: 33ff728209b673770408aa487cc482c5e080327ee90806a9d8014dfda75e019c
+Deleted: 2f035d3cb1ca4940f2b1381ef7f2cb8ecda3e6f39967ce6bcb9ecd61e96ec667
+Deleted: 8ecf8a9b915f2900deba3462bf5297e52ffd7b9b0f1cc91df5f553b6347d804e
+Deleted: 2cd56ba950c8022a191c8cb76ad37a2d664530a0b812f332e01bb1de47d3feed
+zx@kvm:~$
+
+【这条命令会用	buntu:14.04 镜像启动一个容器，命名为u14】
+【  -d, --detach=false  Run container in background and print container ID】
+zx@kvm:~$ docker run --name u14 -it -d ubuntu:14.04 /bin/bash
+e946f2477ea982e7cf77d55b5c896c7da5ae75ce69e9352a1ced590cef462035
+e946f2477ea9	zx add 和下方 root@e946f2477ea9 一致
+【使用 docker exec命令进入容器u14，修改其内容】
+zx@kvm:~$ docker exec -it u14 /bin/bash
+root@e946f2477ea9:/# echo "blabla" > etc/bla.blala
+root@e946f2477ea9:/# ll /etc/bla.blala
+-rw-r--r-- 1 root root 7 Mar 29 10:54 /etc/bla.blala
+root@e946f2477ea9:/# exit
+exit
+zx@kvm:~$
+【修改了容器的文件，也就是改动了容器的存储层。可以通过docker diff 命令看到具体的改动。】
+zx@kvm:~$ docker diff u14
+C /etc
+A /etc/bla.blala
+C /root
+A /root/.bash_history
+zx@kvm:~$
+【再次进入容器u14，上次新增的文件还在】
+zx@kvm:~$ docker exec -it u14 /bin/bash
+root@e946f2477ea9:/#
+root@e946f2477ea9:/# ll /etc/bla.blala
+-rw-r--r-- 1 root root 7 Mar 29 10:54 /etc/bla.blala
+root@e946f2477ea9:/#
+
+
+【用下面的命令将容器保存为镜像】
+zx@kvm:~$ docker commit --author "zx" --message "add /etc/bla.blala" u14 ubuntu:v2
+9c3a12f73531b1a3b3bac8ebaa524660ef7397f01c507e8d07e5194f03a817af
+zx@kvm:~$
+zx@kvm:~$ docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE
+ubuntu              v2                  9c3a12f73531        3 seconds ago       404.7 MB
+ubuntu              14.04               e8b280fce101        26 hours ago        404.7 MB
+<none>              <none>              2f0e164a6ec4        26 hours ago        205.2 MB
+zx@kvm:~$
+zx@kvm:~$ docker history ubuntu:v2
+IMAGE               CREATED              CREATED BY          SIZE
+9c3a12f73531        About a minute ago   /bin/bash           61 B
+e8b280fce101        26 hours ago                             404.7 MB
+zx@kvm:~$
+【新的镜像ubuntu:v2定制好后，可以来运行这个镜像】
+zx@kvm:~$ docker run --name u14v2 -it ubuntu:v2 /bin/bash
+root@f2e9bb433402:/#
+root@f2e9bb433402:/# ls etc/bla.blala
+etc/bla.blala
+root@f2e9bb433402:/#
+
+
+root@f2e9bb433402:/# exit
+exit
+zx@kvm:~$
+zx@kvm:~$ docker run --name u14v2 -it ubuntu:v2 /bin/bash
+FATA[0000] Error response from daemon: Conflict. The name "u14v2" is already in use by container f2e9bb433402. You have to delete (or rename) that container to be able to reuse that name.
+zx@kvm:~$
+zx@kvm:~$ docker rm f2e9bb433402
+f2e9bb433402
+zx@kvm:~$
+zx@kvm:~$ docker run --name u14v2 -it ubuntu:v2 /bin/bash
+root@8e37779058e7:/#
+root@8e37779058e7:/# ll /etc/bla.blala
+-rw-r--r-- 1 root root 7 Mar 29 10:54 /etc/bla.blala
+root@8e37779058e7:/# cat !$
+cat /etc/bla.blala
+blabla
+root@8e37779058e7:/#
+
+
+
+
+
+
+
+
+-----------------
+docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
+docker exec [OPTIONS] CONTAINER COMMAND [ARG...]
+    rm        Remove one or more CONTAINERS
+    rmi       Remove one or more IMAGES
+
+docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]
+
+
+
+
+
+
+
+
+
