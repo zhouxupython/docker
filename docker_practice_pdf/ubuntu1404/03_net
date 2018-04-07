@@ -1,0 +1,485 @@
+大写 P
+当使用	docker	run -P	标记时，Docker会随机映射一个49000~49900的端口到内部容器开放的网络端口。
+使用	docker	ps		可以看到
+
+----------
+小写 p
+当使用	docker	run -p	标记时，则可以指定要映射的端口，并且，在一个指定端口上只可以绑定一个容器。
+支持的格式有
+	 	 ip:hostPort:containerPort	|	ip::containerPort	|	hostPort:containerPort	。
+
+还可以使用udp标记来指定	udp端口
+$	docker	run	-d	-p	127.0.0.1:5000:5000/udp	training/webapp	python	app.py
+
+标记可以多次使用来绑定多个端口
+例如
+$	docker	run	-d	\
+-p	5000:5000	\
+-p	3000:80	\
+training/webapp	\
+python	app.py
+
+
+
+
+----------------------------------------
+
+
+zx@kvm:~$ docker exec -it e50fabe33311 bash
+root@e50fabe33311:/#
+root@e50fabe33311:/# mount
+none on / type aufs (rw,relatime,si=8556cb16,dio,dirperm1)
+proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+tmpfs on /dev type tmpfs (rw,nosuid,mode=755)
+devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=666)
+shm on /dev/shm type tmpfs (rw,nosuid,nodev,noexec,relatime,size=65536k)
+mqueue on /dev/mqueue type mqueue (rw,nosuid,nodev,noexec,relatime)
+sysfs on /sys type sysfs (ro,nosuid,nodev,noexec,relatime)
+/dev/disk/by-uuid/8f6fc7da-5bc2-4ef7-8504-799ce5d2395b on /etc/resolv.conf type ext4 (rw,relatime,errors=remount-ro,data=ordered)
+/dev/disk/by-uuid/8f6fc7da-5bc2-4ef7-8504-799ce5d2395b on /etc/hostname type ext4 (rw,relatime,errors=remount-ro,data=ordered)
+/dev/disk/by-uuid/8f6fc7da-5bc2-4ef7-8504-799ce5d2395b on /etc/hosts type ext4 (rw,relatime,errors=remount-ro,data=ordered)
+devpts on /dev/console type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000)
+proc on /proc/asound type proc (ro,nosuid,nodev,noexec,relatime)
+proc on /proc/bus type proc (ro,nosuid,nodev,noexec,relatime)
+proc on /proc/fs type proc (ro,nosuid,nodev,noexec,relatime)
+proc on /proc/irq type proc (ro,nosuid,nodev,noexec,relatime)
+proc on /proc/sys type proc (ro,nosuid,nodev,noexec,relatime)
+proc on /proc/sysrq-trigger type proc (ro,nosuid,nodev,noexec,relatime)
+tmpfs on /proc/kcore type tmpfs (rw,nosuid,mode=755)
+tmpfs on /proc/timer_stats type tmpfs (rw,nosuid,mode=755)
+root@e50fabe33311:/#
+root@e50fabe33311:/# df -h
+Filesystem                                              Size  Used Avail Use% Mounted on
+none                                                     83G   12G   67G  15% /
+tmpfs                                                   498M     0  498M   0% /dev
+shm                                                      64M     0   64M   0% /dev/shm
+/dev/disk/by-uuid/8f6fc7da-5bc2-4ef7-8504-799ce5d2395b   83G   12G   67G  15% /etc/hosts
+tmpfs                                                   498M     0  498M   0% /proc/kcore
+tmpfs                                                   498M     0  498M   0% /proc/timer_stats
+root@e50fabe33311:/#
+root@e50fabe33311:/# cat /etc/hostname
+e50fabe33311
+root@e50fabe33311:/#
+root@e50fabe33311:/# cat /etc/hosts
+172.17.0.4      e50fabe33311
+127.0.0.1       localhost
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+root@e50fabe33311:/#
+root@e50fabe33311:/# ifconfig
+eth0      Link encap:Ethernet  HWaddr 02:42:ac:11:00:04
+          inet addr:172.17.0.4  Bcast:0.0.0.0  Mask:255.255.0.0
+
+
+root@e50fabe33311:/# cat /etc/resolv.conf
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+
+
+
+启动两个容器后，互相ping，可以ping通，
+
+容器：
+root@e50fabe33311:/# route
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+default         172.17.42.1     0.0.0.0         UG    0      0        0 eth0
+172.17.0.0      *               255.255.0.0     U     0      0        0 eth0
+
+
+宿主机：
+zx@kvm:~$ route
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+default         192.168.0.1     0.0.0.0         UG    0      0        0 eth0
+172.17.0.0      *               255.255.0.0     U     0      0        0 docker0		！！！
+192.168.0.0     *               255.255.255.0   U     1      0        0 eth0
+zx@kvm:~$
+
+
+
+zx@kvm:~$
+zx@kvm:~$ ifconfig
+docker0   Link encap:Ethernet  HWaddr 02:aa:a9:4b:03:07
+          inet addr:172.17.42.1  Bcast:0.0.0.0  Mask:255.255.0.0
+          inet6 addr: fe80::7c1c:26ff:fe27:5105/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:98 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:450 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:6474 (6.4 KB)  TX bytes:94609 (94.6 KB)
+
+eth0      Link encap:Ethernet  HWaddr 00:23:5a:11:e7:c3
+          inet addr:192.168.0.101  Bcast:192.168.0.255  Mask:255.255.255.0
+          inet6 addr: fe80::223:5aff:fe11:e7c3/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:25126 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:24367 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:11783780 (11.7 MB)  TX bytes:3052407 (3.0 MB)
+          Interrupt:17
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:1007 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1007 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:100194 (100.1 KB)  TX bytes:100194 (100.1 KB)
+
+veth1c5abcb Link encap:Ethernet  HWaddr 92:8a:18:43:b5:1c
+          inet6 addr: fe80::908a:18ff:fe43:b51c/64 Scope:Link
+          UP BROADCAST RUNNING  MTU:1500  Metric:1
+          RX packets:15 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:135 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:1222 (1.2 KB)  TX bytes:27390 (27.3 KB)
+
+veth73717df Link encap:Ethernet  HWaddr 02:aa:a9:4b:03:07
+          inet6 addr: fe80::aa:a9ff:fe4b:307/64 Scope:Link
+          UP BROADCAST RUNNING  MTU:1500  Metric:1
+          RX packets:13 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:124 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:1026 (1.0 KB)  TX bytes:26504 (26.5 KB)
+
+vethd8666db Link encap:Ethernet  HWaddr a6:c5:5c:cd:bc:96
+          inet6 addr: fe80::a4c5:5cff:fecd:bc96/64 Scope:Link
+          UP BROADCAST RUNNING  MTU:1500  Metric:1
+          RX packets:25 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:334 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:1964 (1.9 KB)  TX bytes:71184 (71.1 KB)
+
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+e50fabe33311        ubuntu:v2           "/bin/bash"         24 hours ago        Up 24 hours                             u14v2-4
+7acd8a9f254f        ubuntu:14.04        "/bin/bash"         24 hours ago        Up 9 hours                              pensive_fermat
+c1223a850ed5        ubuntu:v2           "/bin/bash"         25 hours ago        Up 9 hours                              u14v2-3
+zx@kvm:~$
+
+
+zx@kvm:~$ ip addr show docker0
+3: docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    link/ether 02:aa:a9:4b:03:07 brd ff:ff:ff:ff:ff:ff
+    inet 172.17.42.1/16 scope global docker0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::7c1c:26ff:fe27:5105/64 scope link
+       valid_lft forever preferred_lft forever
+zx@kvm:~$
+zx@kvm:~$ ip addr show veth1c5abcb
+29: veth1c5abcb@if28: <BROADCAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master docker0 state UP group default
+    link/ether 92:8a:18:43:b5:1c brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::908a:18ff:fe43:b51c/64 scope link
+       valid_lft forever preferred_lft forever
+
+zx@kvm:~$ ip addr show veth73717df
+31: veth73717df@if30: <BROADCAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master docker0 state UP group default
+    link/ether 02:aa:a9:4b:03:07 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::aa:a9ff:fe4b:307/64 scope link
+       valid_lft forever preferred_lft forever
+
+zx@kvm:~$ ip addr show vethd8666db
+27: vethd8666db@if26: <BROADCAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master docker0 state UP group default
+    link/ether a6:c5:5c:cd:bc:96 brd ff:ff:ff:ff:ff:ff
+    inet6 fe80::a4c5:5cff:fecd:bc96/64 scope link
+       valid_lft forever preferred_lft forever
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$
+
+
+
+
+
+----------
+
+用户使用	 	 --net=none		后，可以自行配置网络，让容器达到跟平常一样具有访问网络的权
+限。通过这个过程，可以了解	Docker	配置网络的细节。
+首先，启动一个	 	 /bin/bash		容器，指定	 	 --net=none		参数。
+$	docker	run	-i	-t	--rm	--net=none	base	/bin/bash
+root@63f36fc01b5f:/#
+在本地主机查找容器的进程	id，并为它创建网络命名空间。
+$	docker	inspect	-f	'{{.State.Pid}}'	63f36fc01b5f
+2778
+$	pid=2778
+$	sudo	mkdir	-p	/var/run/netns
+$	sudo	ln	-s	/proc/$pid/ns/net	/var/run/netns/$pid
+检查桥接网卡的	IP	和子网掩码信息。
+$	ip	addr	show	docker0
+21:	docker0:	...
+inet	172.17.42.1/16	scope	global	docker0
+...
+创建一对	“veth	pair”	接口	A 	和	B，绑定	A 	到网桥	 	 docker0	，并启用它
+$	sudo	ip	link	add	A	type	veth	peer	name	B
+$	sudo	brctl	addif	docker0	A
+$	sudo	ip	link	set	A	up
+将B放到容器的网络命名空间，命名为	eth0，启动它并配置一个可用	IP（桥接网段）和默认
+网关。
+$	sudo	ip	link	set	B	netns	$pid
+$	sudo	ip	netns	exec	$pid	ip	link	set	dev	B	name	eth0
+$	sudo	ip	netns	exec	$pid	ip	link	set	eth0	up
+$	sudo	ip	netns	exec	$pid	ip	addr	add	172.17.42.99/16	dev	eth0
+$	sudo	ip	netns	exec	$pid	ip	route	add	default	via	172.17.42.1
+网络
+229
+以上，就是	Docker	配置网络的具体过程。
+当容器结束后，Docker	会清空容器，容器内的	eth0	会随网络命名空间一起被清除，A 	接口也
+被自动从	 	 docker0		卸载。
+此外，用户可以使用	 	 ip	netns	exec		命令来在指定网络命名空间中进行配置，从而配置容器
+内的网络
+
+
+??? sudo	mkdir	-p	/var/run/netns   这个netns  可以替换成别的名称吗 比如 ABC？
+
+
+
+
+
+
+
+https://blog.csdn.net/joanna_yan/article/details/48347495	Ubuntu14.04安装bridge-utils安装brctl
+1、下载bridge-utils   http://www.linuxfromscratch.org/blfs/view/svn/basicnet/bridge-utils.html
+http://www.linuxfromscratch.org/blfs/view/svn/basicnet/bridge-utils.html
+	
+$ tar xJf ***.tar.xz
+
+2、放到/usr/src 目录下
+输入：su以root运行
+输入：cp /home/joanna/桌面/bridge-utils-1.5.tar.gz /usr/src/bridge-utils-1.5.tar.gz
+bridge-utils拷贝到/usr/src
+输入：tar zxvf bridge-utils-1.5.tar.gz解压
+输入：cd bridge-utils-1.5
+进入解压好的文件夹
+
+3、配置
+①更新autoconf
+输入：apt-get install autoconf
+这是为了解决直接用autoconf会产生的一个错误：
+程序 'autoconf' 已包含在下列软件包中：
+ * autoconf
+ * autoconf2.13
+请尝试：apt-get install <选定的软件包>
+②自动配置
+输入：autoconf
+③生成configure文件
+输入：./configure
+④修改一下Linux的/usr/include/linux/if_bridge.h，为了make做准备
+输入：cd /usr/include/linux/
+输入：vi if_bridge.h
+光标移动到#include <linux/if_ether.h>的下一行，按i键进入编辑模式，键入#include <linux/in6.h>，按Esc退出编辑模式，键入:w保存修改（冒号也要写哦），:x退出。结果就是if_bridge.h多了一个include，如图：
+这一步是为了避免make时出现错误，这个错误是：
+In file included from libbridge.h:24:0,
+                 from libbridge_devif.c:28:
+/usr/include/linux/if_bridge.h:184:20: error: field ‘ip6’ has incomplete type
+    struct in6_addr ip6;
+                    ^
+make[1]: *** [libbridge_devif.o] 错误 1
+
+和
+
+In file included from ../libbridge/libbridge.h:24:0,
+                 from brctl.c:25:
+/usr/include/linux/if_bridge.h:184:20: error: field ‘ip6’ has incomplete type
+    struct in6_addr ip6;
+                    ^
+make[1]: *** [brctl.o] 错误 1
+
+显然是使用了ip6的结构体，而没有引用in6.h头文件。
+参考网页：https://lkml.org/lkml/2013/1/13/116
+
+4、编译安装
+输入：make
+输入：make install
+
+5、将命令brctl复制到/sbin下
+输入：cp /usr/local/sbin/brctl  /sbin
+
+6、验证
+输入：brctl
+可以显示brctl帮助信息
+
+zx@kvm:/var/run$ cd
+zx@kvm:~$ docker inspect -f '{{.State.Pid}}' f83f93c154ce
+10447
+zx@kvm:~$
+zx@kvm:~$
+zx@kvm:~$ sudo mkdir -p /var/run/netns
+zx@kvm:~$ sudo ln -s /proc/10447/ns/net /var/run/netns/10447
+zx@kvm:~$
+zx@kvm:~$ sudo ip link add A type veth peer name B
+zx@kvm:~$ sudo brctl addif docker0 A
+zx@kvm:~$ sudo ip link set A up
+zx@kvm:~$
+zx@kvm:~$ ifconfig
+A         Link encap:Ethernet  HWaddr 1e:53:ff:bd:93:02
+          inet6 addr: fe80::1c53:ffff:febd:9302/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:28 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:29 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:4904 (4.9 KB)  TX bytes:5186 (5.1 KB)
+
+B         Link encap:Ethernet  HWaddr d6:ec:10:7f:44:6d
+          inet6 addr: fe80::d4ec:10ff:fe7f:446d/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:29 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:28 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:5186 (5.1 KB)  TX bytes:4904 (4.9 KB)
+
+docker0   Link encap:Ethernet  HWaddr 02:aa:a9:4b:03:07
+          inet addr:172.17.42.1  Bcast:0.0.0.0  Mask:255.255.0.0
+
+eth0      Link encap:Ethernet  HWaddr 00:23:5a:11:e7:c3
+          
+zx@kvm:~$ sudo ip link set B netns 10447
+zx@kvm:~$ sudo ip netns exec 10447 ip link set dev B name eth0
+zx@kvm:~$ sudo ip netns exec 10447 ip link set eth0 up
+zx@kvm:~$ sudo ip netns exec 10447 ip addr add 172.17.42.99/16 dev eth0
+zx@kvm:~$ sudo ip netns exec 10447 ip route add default via 172.17.42.1
+
+
+zx@kvm:~$ docker run -i -t --rm --net=none ubuntu:v2 /bin/bash
+root@f83f93c154ce:/# ifconfig
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+root@f83f93c154ce:/# ifconfig
+eth0      Link encap:Ethernet  HWaddr d6:ec:10:7f:44:6d
+          inet addr:172.17.42.99  Bcast:0.0.0.0  Mask:255.255.0.0
+          inet6 addr: fe80::d4ec:10ff:fe7f:446d/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:111 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:64 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:20565 (20.5 KB)  TX bytes:10940 (10.9 KB)
+
+lo        Link encap:Local Loopback
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          inet6 addr: ::1/128 Scope:Host
+          UP LOOPBACK RUNNING  MTU:65536  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+root@f83f93c154ce:/#
+root@f83f93c154ce:/#
+root@f83f93c154ce:/# route
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+172.17.0.0      *               255.255.0.0     U     0      0        0 eth0
+root@f83f93c154ce:/#
+root@f83f93c154ce:/#
+root@f83f93c154ce:/# route
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+default         172.17.42.1     0.0.0.0         UG    0      0        0 eth0
+172.17.0.0      *               255.255.0.0     U     0      0        0 eth0
+root@f83f93c154ce:/#
+root@f83f93c154ce:/#
+root@f83f93c154ce:/#
+
+
+
+zx@kvm:~$ ip netns help
+Usage: ip netns list
+       ip netns add NAME
+       ip netns delete NAME
+       ip netns identify PID
+       ip netns pids NAME
+       ip netns exec NAME cmd ...
+       ip netns monitor
+zx@kvm:~$
+
+
+
+sudo ip netns exec NAME  	cmd ...
+sudo ip netns exec 10447 	ip link set dev B name eth0
+sudo ip netns exec 10447 	ip link set eth0 up
+sudo ip netns exec 10447 	ip addr add 172.17.42.99/16 dev eth0
+sudo ip netns exec 10447 	ip route add default via 172.17.42.1
+
+
+进程号之后跟的就是 普通的 linux网络命令
+sudo ip link add A type veth peer name B
+sudo brctl addif docker0 A
+sudo ip link set A up
+
+
+zx@kvm:~$ ip link help
+Usage: ip link add [link DEV] [ name ] NAME
+                   [ txqueuelen PACKETS ]
+                   [ address LLADDR ]
+                   [ broadcast LLADDR ]
+                   [ mtu MTU ]
+                   [ numtxqueues QUEUE_COUNT ]
+                   [ numrxqueues QUEUE_COUNT ]
+                   type TYPE [ ARGS ]
+       ip link delete DEV type TYPE [ ARGS ]
+
+       ip link set { dev DEVICE | group DEVGROUP } [ { up | down } ]
+                          [ arp { on | off } ]
+                          [ dynamic { on | off } ]
+                          [ multicast { on | off } ]
+                          [ allmulticast { on | off } ]
+                          [ promisc { on | off } ]
+                          [ trailers { on | off } ]
+                          [ txqueuelen PACKETS ]
+                          [ name NEWNAME ]
+                          [ address LLADDR ]
+                          [ broadcast LLADDR ]
+                          [ mtu MTU ]
+                          [ netns PID ]
+                          [ netns NAME ]
+                          [ alias NAME ]
+                          [ vf NUM [ mac LLADDR ]
+                                   [ vlan VLANID [ qos VLAN-QOS ] ]
+                                   [ rate TXRATE ] ]
+                                   [ spoofchk { on | off} ] ]
+                                   [ state { auto | enable | disable} ] ]
+                          [ master DEVICE ]
+                          [ nomaster ]
+       ip link show [ DEVICE | group GROUP ] [up]
+
+TYPE := { vlan | veth | vcan | dummy | ifb | macvlan | macvtap |
+          can | bridge | ipoib | ip6tnl | ipip | sit | vxlan |
+          gre | gretap | ip6gre | ip6gretap | vti }
+zx@kvm:~$
+zx@kvm:~$
+
+
+zx@kvm:~$ ip help
+Usage: ip [ OPTIONS ] OBJECT { COMMAND | help }
+       ip [ -force ] -batch filename
+where  OBJECT := { link | addr | addrlabel | route | rule | neigh | ntable |
+                   tunnel | tuntap | maddr | mroute | mrule | monitor | xfrm |
+                   netns | l2tp | tcp_metrics | token }
+       OPTIONS := { -V[ersion] | -s[tatistics] | -d[etails] | -r[esolve] |
+                    -f[amily] { inet | inet6 | ipx | dnet | bridge | link } |
+                    -4 | -6 | -I | -D | -B | -0 |
+                    -l[oops] { maximum-addr-flush-attempts } |
+                    -o[neline] | -t[imestamp] | -b[atch] [filename] |
+                    -rc[vbuf] [size]}
+zx@kvm:~$
+zx@kvm:~$
+
+
+
+
+
+
